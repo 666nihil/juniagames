@@ -351,7 +351,7 @@ function filtered(){
   return games.filter(function(g){return (!genre||g.genre===genre)&&(!n||((g.title||'')+' '+(g.genre||'')+' '+(g.notes||'')).toLowerCase().indexOf(n)>=0)});
 }
 function heroHtml(g){
-  return '<section class="hero brk'+((g.notes||g.howto)?' nm':'')+'" aria-label="Destacado">'+CORNERS+'<div class="cover">'+coverHtml(g,playingId===g.id)+'</div><div class="hero-in">'
+  return '<section class="hero brk'+((g.notes||g.howto)?' nm':'')+'" aria-label="Destacado">'+CORNERS+'<div class="cover">'+coverHtml(g,true)+'</div><div class="hero-in">'
    +'<div class="kicker">'+'Recién agregado'+(g.genre?' · '+esc(g.genre):'')+'</div>'
    +'<h1>'+esc(g.title)+'</h1><div class="data">'
    +dat('Lanzamientos',pad(g.plays||0))
