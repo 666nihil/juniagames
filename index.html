@@ -232,6 +232,7 @@ main,footer{position:relative;z-index:1}
      genre  : (opcional) Arcade, Puzzle, etc.
      notes  : (opcional) descripción
      added  : (opcional) fecha 'AAAA-MM-DD'
+     size   : (opcional) peso del juego, ej. '2.4 GB'
    Ejemplos (sacales las // para usarlos):
    ===================================================================== */
 window.KIOSCO_GAMES=[
@@ -251,6 +252,7 @@ function safeImg(u){return (typeof u==='string'&&/^(data:image\/(jpeg|png|webp|g
 function pad(n){return String(n).padStart(2,'0')}
 function clock(s){s=Math.max(0,Math.floor(s||0));return pad(Math.floor(s/3600))+':'+pad(Math.floor(s%3600/60))+':'+pad(s%60)}
 function fmtDate(ts,full){if(!ts)return '—';var o=full?{day:'2-digit',month:'short',year:'numeric'}:{day:'2-digit',month:'short'};return new Date(ts).toLocaleDateString('es-AR',o).replace(/\./g,'').toUpperCase()}
+function extOf(u){try{var x=new URL(u),m=(x.hash||'').match(/\.([a-z0-9]{2,5})$/i)||x.pathname.match(/\.([a-z0-9]{2,5})$/i);return m?m[1].toUpperCase():''}catch(e){return ''}}
 function hostOf(u){try{return new URL(u).hostname.replace(/^www\./,'')}catch(e){return u}}
 function hash(s){var h=5381;for(var i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return h}
 function rng(seed){var a=seed>>>0;return function(){a=(a+0x6D2B79F5)>>>0;var t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
@@ -267,7 +269,7 @@ function lsWrite(){try{localStorage.setItem(LS,JSON.stringify(stats))}catch(e){}
   if(!d||!d.title)return;
   var id='g'+i+'-'+hash((d.title||'')+(d.url||'')).toString(36);
   var st=stats[id]||{};
-  games.push({id:id,title:d.title,kind:d.html?'html':'link',url:d.url||'',html:d.html||'',cover:d.cover||'',genre:d.genre||'',notes:d.notes||'',
+  games.push({id:id,title:d.title,kind:d.html?'html':'link',url:d.url||'',html:d.html||'',cover:d.cover||'',genre:d.genre||'',notes:d.notes||'',size:d.size||'',
     key:hash((d.title||'')+(d.url||'')).toString(36),added:Date.parse(d.added)||0,plays:st.plays||0,last:st.last||0,seconds:st.seconds||0});
 });
 var SEEN='kiosco-arcade-seen-v1',seen=[];
@@ -344,7 +346,7 @@ function heroHtml(g){
    +dat('Lanzamientos',pad(g.plays||0))
    +(g.kind==='html'?dat('Tiempo en órbita','T+'+clock(g.seconds)):dat('Destino',esc(hostOf(g.url))))
    +dat('Última vez',fmtDate(g.last))+'</div>'
-   +'<div class="acts">'+launchBtn(g)+'<button class="btn ghost" data-act="open" data-id="'+esc(g.id)+'">Detalles</button></div></div></section>';
+   +'<div class="acts">'+launchBtn(g)+'</div></div></section>';
 }
 function aboutHtml(g){
   return g.notes?'<section class="about" aria-label="Descripción"><small>Descripción</small><p>'+esc(g.notes)+'</p></section>':'';
@@ -354,7 +356,7 @@ function cardHtml(g,n){
    +'<span class="mrow"><span>'+pad(n)+'</span><span class="gen">'+esc(g.genre||'Sin género')+'</span></span>'
    +'<span class="ttl">'+esc(g.title)+'</span>'
    +(g.notes?'<span class="desc">'+esc(g.notes)+'</span>':'')
-   +'<span class="stats"><span>Lanz. '+pad(g.plays||0)+'</span><span>'+(g.kind==='html'?'T+'+clock(g.seconds):'Enlace')+'</span></span></span></button>';
+   +'<span class="stats"><span>Lanz. '+pad(g.plays||0)+'</span><span>'+(g.kind==='html'?'T+'+clock(g.seconds):(esc(g.size)||'Enlace'))+'</span></span></span></button>';
 }
 function voidHtml(){
   return '<div class="void brk">'+CORNERS+'<svg class="ret" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="44" fill="none" stroke="rgba(255,255,255,.2)"/><circle cx="60" cy="60" r="28" fill="none" stroke="rgba(255,255,255,.2)"/><circle cx="60" cy="60" r="44" fill="none" stroke="#8fd6ff" stroke-width="1.5" stroke-dasharray="46 231" transform="rotate(-70 60 60)"/><path d="M60 4V28M60 92V116M4 60H28M92 60H116" stroke="rgba(255,255,255,.5)" fill="none"/></svg>'
@@ -402,7 +404,7 @@ function showDetail(id){
    +'<button class="x" data-act="close" aria-label="Cerrar">✕</button><div class="dcover">'+coverHtml(g)+'</div><div class="dbody">'
    +'<div class="kicker">'+(g.kind==='html'?'Archivo HTML':'Enlace')+(g.genre?' · '+esc(g.genre):'')+'</div><h2 id="mT">'+esc(g.title)+'</h2>'
    +(g.notes?'<p>'+esc(g.notes)+'</p>':'')
-   +'<div class="dgrid">'+dat('Destino',dest)+dat('Añadido',fmtDate(g.added,true))+dat('Lanzamientos',pad(g.plays||0))+dat('Último lanzamiento',fmtDate(g.last,true))
+   +'<div class="dgrid">'+dat('Destino',dest)+dat('Peso',g.size?esc(g.size):'—')+dat('Formato',g.kind==='html'?'HTML':(extOf(g.url)||'—'))+dat('Género',esc(g.genre||'—'))+dat('Creado / añadido',fmtDate(g.added,true))+dat('Lanzamientos',pad(g.plays||0))+dat('Último lanzamiento',fmtDate(g.last,true))
    +(g.kind==='html'?dat('Tiempo en órbita','T+'+clock(g.seconds)):'')+'</div>'
    +'<div class="acts">'+launchBtn(g)
    
