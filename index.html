@@ -163,6 +163,9 @@ main,footer{position:relative;z-index:1}
 .about{position:relative;z-index:1;border:1px solid var(--line);border-top:0;background:var(--panel);padding:clamp(18px,3vw,28px) clamp(22px,4.4vw,52px);margin-bottom:56px}
 .about small{display:block;font:400 10px/1.4 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:8px}
 .about p{margin:0;color:#c3ccd6;max-width:70ch;font-size:15px;line-height:1.6}
+.about .how{margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.about .how small{color:var(--signal)}
+.about .how p{white-space:pre-line}
 .desc{display:-webkit-box!important;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--dim);font:400 13px/1.5 var(--body)}
 .card .cv{position:relative}
 .new{position:absolute;top:10px;left:10px;z-index:2;background:var(--signal);color:var(--bg);font:500 9px/1 var(--mono);letter-spacing:.2em;padding:5px 7px}
@@ -233,14 +236,12 @@ main,footer{position:relative;z-index:1}
      notes  : (opcional) descripción
      added  : (opcional) fecha 'AAAA-MM-DD'
      size   : (opcional) peso del juego, ej. '2.4 GB'
+     howto  : (opcional) cómo abrirlo / instalarlo, una línea
    Ejemplos (sacales las // para usarlos):
    ===================================================================== */
 window.KIOSCO_GAMES=[
-  {title:'R.E.P.O.', url:'https://vikingfile.com/f/lKfy4gl1KW#REPO_b23363152_KoraX.7z', genre:'Terror co-op', notes:'Juego cooperativo de terror: recuperá objetos valiosos y escapá de los monstruos.', added:'2026-11-17', size:'1.45 GB', howto:'1. Descomprime el juego utilizando WinRAR
-2 .Ejecuta Steam
-3 .Ejecuta R.E.P.O Launcher.exe como Administrador
-4 .¡A Jugar!'},
-  // {title:'Lossless Scaling', url:'https://vikingfile.com/f/WjHt16NcZY#Lossless Scaling_v3.2.2_KoraX.7z', genre:'Programas', notes:'Utilidad de juegos todo en uno para escalado y generación de cuadros', added:'2026-11-17', size:'175 MB', howto:'1. Descomprime el juego utilizando WinRAR 2. Ejecuta _INSTALAR.reg (1 sola vez) 3. Ejecuta LosslessScaling.exe como Administrador'},
+  {title:'R.E.P.O.', url:'https://vikingfile.com/f/lKfy4gl1KW#REPO_b23363152_KoraX.7z', genre:'Terror co-op', notes:'Juego cooperativo de terror: recuperá objetos valiosos y escapá de los monstruos.', added:'2026-11-17', size:'1.45 GB', howto:'1. Descomprimí el juego con WinRAR\n2. Ejecutá Steam\n3. Ejecutá R.E.P.O Launcher.exe como Administrador\n4. ¡A jugar!'},
+  // {title:'Mi juego online', url:'https://ejemplo.com/juego', genre:'Arcade', notes:'Lo mejor de lo mejor.'},
   // {title:'Mi juego HTML', genre:'Puzzle', html:`<!doctype html><html><body><h1>Hola</h1></body></html>`},
 ];
 </script>
@@ -272,7 +273,7 @@ function lsWrite(){try{localStorage.setItem(LS,JSON.stringify(stats))}catch(e){}
   if(!d||!d.title)return;
   var id='g'+i+'-'+hash((d.title||'')+(d.url||'')).toString(36);
   var st=stats[id]||{};
-  games.push({id:id,title:d.title,kind:d.html?'html':'link',url:d.url||'',html:d.html||'',cover:d.cover||'',genre:d.genre||'',notes:d.notes||'',size:d.size||'',
+  games.push({id:id,title:d.title,kind:d.html?'html':'link',url:d.url||'',html:d.html||'',cover:d.cover||'',genre:d.genre||'',notes:d.notes||'',size:d.size||'',howto:d.howto||'',
     key:hash((d.title||'')+(d.url||'')).toString(36),added:Date.parse(d.added)||0,plays:st.plays||0,last:st.last||0,seconds:st.seconds||0});
 });
 var SEEN='kiosco-arcade-seen-v1',seen=[];
@@ -343,7 +344,7 @@ function filtered(){
   return games.filter(function(g){return (!genre||g.genre===genre)&&(!n||((g.title||'')+' '+(g.genre||'')+' '+(g.notes||'')).toLowerCase().indexOf(n)>=0)});
 }
 function heroHtml(g){
-  return '<section class="hero brk'+(g.notes?' nm':'')+'" aria-label="Destacado">'+CORNERS+'<div class="cover">'+coverHtml(g)+'</div><div class="hero-in">'
+  return '<section class="hero brk'+((g.notes||g.howto)?' nm':'')+'" aria-label="Destacado">'+CORNERS+'<div class="cover">'+coverHtml(g)+'</div><div class="hero-in">'
    +'<div class="kicker">'+'Recién agregado'+(g.genre?' · '+esc(g.genre):'')+'</div>'
    +'<h1>'+esc(g.title)+'</h1><div class="data">'
    +dat('Lanzamientos',pad(g.plays||0))
@@ -352,7 +353,9 @@ function heroHtml(g){
    +'<div class="acts">'+launchBtn(g)+'</div></div></section>';
 }
 function aboutHtml(g){
-  return g.notes?'<section class="about" aria-label="Descripción"><small>Descripción</small><p>'+esc(g.notes)+'</p></section>':'';
+  if(!g.notes&&!g.howto)return '';
+  return '<section class="about" aria-label="Descripción">'+(g.notes?'<small>Descripción</small><p>'+esc(g.notes)+'</p>':'')
+   +(g.howto?'<div class="how"><small>Cómo abrirlo</small><p>'+esc(g.howto)+'</p></div>':'')+'</section>';
 }
 function cardHtml(g,n){
   return '<button class="card brk" data-act="open" data-id="'+esc(g.id)+'">'+CORNERS+'<span class="cv">'+(newIds[g.id]?'<span class="new">Nuevo</span>':'')+coverHtml(g)+'</span><span class="meta">'
@@ -407,6 +410,7 @@ function showDetail(id){
    +'<button class="x" data-act="close" aria-label="Cerrar">✕</button><div class="dcover">'+coverHtml(g)+'</div><div class="dbody">'
    +'<div class="kicker">'+(g.kind==='html'?'Archivo HTML':'Enlace')+(g.genre?' · '+esc(g.genre):'')+'</div><h2 id="mT">'+esc(g.title)+'</h2>'
    +(g.notes?'<p>'+esc(g.notes)+'</p>':'')
+   +(g.howto?'<p><b>Cómo abrirlo:</b>\n'+esc(g.howto)+'</p>':'')
    +'<div class="dgrid">'+dat('Destino',dest)+dat('Peso',g.size?esc(g.size):'—')+dat('Formato',g.kind==='html'?'HTML':(extOf(g.url)||'—'))+dat('Género',esc(g.genre||'—'))+dat('Creado / añadido',fmtDate(g.added,true))+dat('Lanzamientos',pad(g.plays||0))+dat('Último lanzamiento',fmtDate(g.last,true))
    +(g.kind==='html'?dat('Tiempo en órbita','T+'+clock(g.seconds)):'')+'</div>'
    +'<div class="acts">'+launchBtn(g)
